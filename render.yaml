@@ -7,6 +7,7 @@ services:
     startCommand: yarn start
     healthCheckPath: /_health
     autoDeploy: false
+    region: singapore
     disk:
       name: strapi-uploads
       mountPath: /opt/render/project/src/public/uploads
@@ -30,3 +31,4 @@ services:
 databases:
   - name: strapi
     plan: free
+    region: singapore
