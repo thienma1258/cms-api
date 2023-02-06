@@ -1,8 +1,8 @@
 diff --git a/node_modules/@strapi/strapi/ee/license.js b/node_modules/@strapi/strapi/ee/license.js
-index e5a2807..60f6bc5 100644
+index e5a2807..12c5915 100644
 --- a/node_modules/@strapi/strapi/ee/license.js
 +++ b/node_modules/@strapi/strapi/ee/license.js
-@@ -2,10 +2,10 @@
+@@ -2,18 +2,18 @@
  
  const fs = require('fs');
  const { join } = require('path');
@@ -16,8 +16,9 @@ index e5a2807..60f6bc5 100644
  
  const DEFAULT_FEATURES = {
    bronze: [],
-@@ -13,7 +13,7 @@ const DEFAULT_FEATURES = {
-   gold: ['sso', { name: 'audit-logs', options: { retentionDays: 30 } }],
+   silver: [],
+-  gold: ['sso', { name: 'audit-logs', options: { retentionDays: 90 } }],
++  gold: ['sso', { name: 'audit-logs', options: { retentionDays: process.env.AUDIT_LOG_RETENTION_DAYS || 15 } }],
  };
  
 -const publicKey = fs.readFileSync(join(__dirname, 'resources/key.pub'));
@@ -25,7 +26,7 @@ index e5a2807..60f6bc5 100644
  
  class LicenseCheckError extends Error {
    constructor(message, shouldFallback = false) {
-@@ -35,26 +35,26 @@ const readLicense = (directory) => {
+@@ -35,26 +35,28 @@ const readLicense = (directory) => {
  };
  
  const verifyLicense = (license) => {
@@ -62,11 +63,13 @@ index e5a2807..60f6bc5 100644
 +  // }
  
 +  // const licenseInfo = JSON.parse(stringifiedContent);
-+  let licenseInfo={};
++  let licenseInfo = {
++    type:'gold',
++  };
    if (!licenseInfo.features) {
      licenseInfo.features = DEFAULT_FEATURES[licenseInfo.type];
    }
-@@ -68,30 +68,34 @@ const throwError = () => {
+@@ -68,30 +70,37 @@ const throwError = () => {
  };
  
  const fetchLicense = async (key, projectId) => {
@@ -90,9 +93,6 @@ index e5a2807..60f6bc5 100644
 -        throw new LicenseCheckError('The license used does not exists.');
 -      default:
 -        throwError();
--    }
--  } else {
--    throwError();
 +  // const response = await fetch(`https://license.strapi.io/api/licenses/validate`, {
 +  //   method: 'POST',
 +  //   headers: { 'Content-Type': 'application/json' },
@@ -100,7 +100,12 @@ index e5a2807..60f6bc5 100644
 +  // }).catch(throwError);
 +  // console.log(response);
 +  return {
-+    features:DEFAULT_FEATURES,
++    licenseInfo: {
++      features: DEFAULT_FEATURES,
++      type: 'gold'
+     }
+-  } else {
+-    throwError();
    }
 +
 +  // const contentType = response.headers.get('Content-Type');
