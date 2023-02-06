@@ -1,4 +1,4 @@
-module.exports = [
+module.exports = ({env})=>[
   "strapi::errors",
   "strapi::security",
   {
@@ -12,15 +12,15 @@ module.exports = [
             "'self'",
             'data:',
             'blob:',
-            `https://${env('AWS_BUCKET')}.s3.${env('AWS_REGION')}.amazonaws.com`,
-            `https://${(env('DOMAIN'))}`,
+            // `https://${env('AWS_BUCKET')}.s3.${env('AWS_REGION')}.amazonaws.com`,
+            // `https://${(env('DOMAIN'))}`,
           ],
           'media-src': [
             "'self'",
             'data:',
             'blob:',
-            `https://${env('AWS_BUCKET')}.s3.${env('AWS_REGION')}.amazonaws.com`,
-            `https://${(env('DOMAIN'))}`,
+            // `https://${env('AWS_BUCKET')}.s3.${env('AWS_REGION')}.amazonaws.com`,
+            // `https://${(env('DOMAIN'))}`,
           ],
           upgradeInsecureRequests: null,
         },
