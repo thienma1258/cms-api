@@ -1,19 +1,30 @@
-diff --git a/node_modules/@strapi/strapi/ee/index.js b/node_modules/@strapi/strapi/ee/index.js
-index de46652..073f130 100644
---- a/node_modules/@strapi/strapi/ee/index.js
-+++ b/node_modules/@strapi/strapi/ee/index.js
-@@ -93,6 +93,7 @@ const onlineUpdate = async ({ strapi }) => {
-         ee.licenseInfo = verifyLicense(license);
-         validateInfo();
-       } catch (error) {
-+        console.log(error);
-         disable(error.message);
-       }
-     } else if (!shouldContactRegistry) {
 diff --git a/node_modules/@strapi/strapi/ee/license.js b/node_modules/@strapi/strapi/ee/license.js
-index e5a2807..5e3948d 100644
+index e5a2807..60f6bc5 100644
 --- a/node_modules/@strapi/strapi/ee/license.js
 +++ b/node_modules/@strapi/strapi/ee/license.js
+@@ -2,10 +2,10 @@
+ 
+ const fs = require('fs');
+ const { join } = require('path');
+-const crypto = require('crypto');
+-const fetch = require('node-fetch');
++// const crypto = require('crypto');
++// const fetch = require('node-fetch');
+ 
+-const machineId = require('../lib/utils/machine-id');
++// const machineId = require('../lib/utils/machine-id');
+ 
+ const DEFAULT_FEATURES = {
+   bronze: [],
+@@ -13,7 +13,7 @@ const DEFAULT_FEATURES = {
+   gold: ['sso', { name: 'audit-logs', options: { retentionDays: 30 } }],
+ };
+ 
+-const publicKey = fs.readFileSync(join(__dirname, 'resources/key.pub'));
++// const publicKey = fs.readFileSync(join(__dirname, 'resources/key.pub'));
+ 
+ class LicenseCheckError extends Error {
+   constructor(message, shouldFallback = false) {
 @@ -35,26 +35,26 @@ const readLicense = (directory) => {
  };
  
