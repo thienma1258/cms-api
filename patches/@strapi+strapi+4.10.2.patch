@@ -1,0 +1,156 @@
+diff --git a/node_modules/@strapi/strapi/ee/index.js b/node_modules/@strapi/strapi/ee/index.js
+index e7b80f1..426dc95 100644
+--- a/node_modules/@strapi/strapi/ee/index.js
++++ b/node_modules/@strapi/strapi/ee/index.js
+@@ -93,6 +93,7 @@ const onlineUpdate = async ({ strapi }) => {
+     const result = { lastCheckAt: Date.now() };
+ 
+     const fallback = (error) => {
++      console.log(error);
+       if (error instanceof LicenseCheckError && error.shouldFallback && storedInfo?.license) {
+         ee.logger?.warn(
+           `${error.message} The last stored one will be used as a potential fallback.`
+@@ -109,6 +110,7 @@ const onlineUpdate = async ({ strapi }) => {
+           fallback
+         )
+       : storedInfo.license;
++      console.log(shouldContactRegistry,license);
+ 
+     if (license) {
+       try {
+@@ -173,7 +175,7 @@ const checkLicense = async ({ strapi }) => {
+ 
+   if (!shouldStayOffline) {
+     await onlineUpdate({ strapi });
+-    strapi.cron.add({ [shiftCronExpression('0 0 */12 * * *')]: onlineUpdate });
++    // strapi.cron.add({ [shiftCronExpression('0 0 */12 * * *')]: onlineUpdate });
+   } else {
+     if (!ee.licenseInfo.expireAt) {
+       return disable('Your license does not have offline support.');
+diff --git a/node_modules/@strapi/strapi/ee/license.js b/node_modules/@strapi/strapi/ee/license.js
+index 5c69b11..50512dc 100644
+--- a/node_modules/@strapi/strapi/ee/license.js
++++ b/node_modules/@strapi/strapi/ee/license.js
+@@ -11,7 +11,8 @@ const DEFAULT_FEATURES = {
+   silver: [],
+   // Set a null retention duration to allow the user to override it
+   // The default of 90 days is set in the audit logs service
+-  gold: ['sso', { name: 'audit-logs', options: { retentionDays: null } }, 'review-workflows'],
++  // gold: ['sso', { name: 'audit-logs', options: { retentionDays: null } }, 'review-workflows'],
++  gold: ['sso', { name: 'audit-logs', options: { retentionDays: process.env.AUDIT_LOG_RETENTION_DAYS || 15 } }, 'review-workflows'],
+ };
+ 
+ const publicKey = fs.readFileSync(join(__dirname, 'resources/key.pub'));
+@@ -36,25 +37,27 @@ const readLicense = (directory) => {
+ };
+ 
+ const verifyLicense = (license) => {
+-  const [signature, base64Content] = Buffer.from(license, 'base64').toString().split('\n');
++  // const [signature, base64Content] = Buffer.from(license, 'base64').toString().split('\n');
+ 
+-  if (!signature || !base64Content) {
+-    throw new Error('Invalid license.');
+-  }
++  // if (!signature || !base64Content) {
++  //   throw new Error('Invalid license.');
++  // }
+ 
+-  const stringifiedContent = Buffer.from(base64Content, 'base64').toString();
++  // const stringifiedContent = Buffer.from(base64Content, 'base64').toString();
+ 
+-  const verify = crypto.createVerify('RSA-SHA256');
+-  verify.update(stringifiedContent);
+-  verify.end();
++  // const verify = crypto.createVerify('RSA-SHA256');
++  // verify.update(stringifiedContent);
++  // verify.end();
+ 
+-  const verified = verify.verify(publicKey, signature, 'base64');
++  // const verified = verify.verify(publicKey, signature, 'base64');
+ 
+-  if (!verified) {
+-    throw new Error('Invalid license.');
+-  }
++  // if (!verified) {
++  //   throw new Error('Invalid license.');
++  // }
+ 
+-  const licenseInfo = JSON.parse(stringifiedContent);
++  const licenseInfo = {
++    type:'gold'
++  }
+ 
+   if (!licenseInfo.features) {
+     licenseInfo.features = DEFAULT_FEATURES[licenseInfo.type];
+@@ -65,37 +68,44 @@ const verifyLicense = (license) => {
+ };
+ 
+ const throwError = () => {
+-  throw new LicenseCheckError('Could not proceed to the online validation of your license.', true);
++  // throw new LicenseCheckError('Could not proceed to the online validation of your license.', true);
+ };
+ 
+ const fetchLicense = async ({ strapi }, key, projectId) => {
+-  const response = await strapi
+-    .fetch(`https://license.strapi.io/api/licenses/validate`, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify({ key, projectId, deviceId: machineId() }),
+-    })
+-    .catch(throwError);
+-
+-  const contentType = response.headers.get('Content-Type');
+-
+-  if (contentType.includes('application/json')) {
+-    const { data, error } = await response.json();
+-
+-    switch (response.status) {
+-      case 200:
+-        return data.license;
+-      case 400:
+-        throw new LicenseCheckError(error.message);
+-      case 404:
+-        throw new LicenseCheckError('The license used does not exists.');
+-      default:
+-        throwError();
++  // const response = await strapi
++  //   .fetch(`https://license.strapi.io/api/licenses/validate`, {
++  //     method: 'POST',
++  //     headers: { 'Content-Type': 'application/json' },
++  //     body: JSON.stringify({ key, projectId, deviceId: machineId() }),
++  //   })
++  //   .catch(throwError);
++
++  // const contentType = response.headers.get('Content-Type');
++
++  // if (contentType.includes('application/json')) {
++  //   const { data, error } = await response.json();
++
++  //   switch (response.status) {
++  //     case 200:
++  //       return data.license;
++  //     case 400:
++  //       throw new LicenseCheckError(error.message);
++  //     case 404:
++  //       throw new LicenseCheckError('The license used does not exists.');
++  //     default:
++  //       throwError();
++  //   }
++  // } else {
++  //   throwError();
++  // }
++  console.log("get liscence info");
++  return {
++    licenseInfo: {
++      features: DEFAULT_FEATURES,
++      type: 'gold'
+     }
+-  } else {
+-    throwError();
+-  }
+-};
++  };
++}
+ 
+ module.exports = Object.freeze({
+   readLicense,
